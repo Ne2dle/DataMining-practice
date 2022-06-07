@@ -1,6 +1,7 @@
 import numpy as np
 import dm2022exp
 from collections import Counter
+from sklearn.metrics import silhouette_score
 
 
 class KMeans(object):
@@ -11,7 +12,7 @@ class KMeans(object):
         self.depth = 1
 
     def fit(self, x: np.ndarray) -> np.ndarray:
-        sel = np.random.choice(len(x), self.num_cluster,replace= False)
+        sel = np.random.choice(len(x), self.num_cluster, replace=False)
         idx = [x[i] for i in sel]
         rst = [-1 for i in range(len(x))]
         while True:
@@ -30,8 +31,8 @@ class KMeans(object):
                         for z in range(len(x[i])):
                             tmp[z] += x[i][z]/dic[m]
                 new_idx.append(tmp)
-            if self.cal(idx,new_idx) < self.tol:
-                return self.re_fit(x,new_idx,rst)
+            if self.cal(idx, new_idx) < self.tol:
+                return self.re_fit(x, new_idx, rst)
             else:
                 self.depth += 1
                 idx = new_idx
@@ -53,17 +54,19 @@ class KMeans(object):
                         rst[i] = m
         return np.array(rst)
 
-    def cal_distance(self, m, n):
+    @staticmethod
+    def cal_distance(m, n):
         s = 0
         for i in range(len(m)):
             s += (m[i] - n[i]) * (m[i] - n[i])
         return s
 
-    def cal(self,m,n):
+    @staticmethod
+    def cal(m, n):
         s = 0
-        for a, b in zip(m,n):
+        for a, b in zip(m, n):
             s1 = 0
-            for g,f in zip(a,b):
+            for g, f in zip(a, b):
                 s1 += np.power(g-f, 2)
             s += np.sqrt(s1)
         return s
@@ -83,6 +86,11 @@ if __name__ == '__main__':
     X, y = dm2022exp.load_ex4_data()
     k = KMeans(8)
     s = k.fit(X)
+    # 显示准确的聚类图像
     dm2022exp.show_exp4_data(X, y)
+    # 显示预测的聚类图像
     dm2022exp.show_exp4_data(X, s)
+    # 打印纯度
     print(purity(s, y, 8))
+    # 打印平均轮廓系数
+    print(silhouette_score(X, y))
